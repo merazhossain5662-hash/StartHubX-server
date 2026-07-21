@@ -114,7 +114,14 @@ async function run() {
 
     app.get("/api/opportunity", async (req, res) => {
       const query = {};
-      const opportunities = await opportunitiesCollection.find(query).toArray();
+
+      const limit = req.query.limit ? Number(req.query.limit) : 0;
+
+      const opportunities = await opportunitiesCollection
+        .find(query)
+        .limit(limit)
+        .sort({ _id: -1 })
+        .toArray();
       console.log(opportunities);
       res.json(opportunities);
     });
