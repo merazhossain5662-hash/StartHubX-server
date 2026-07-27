@@ -42,7 +42,6 @@ async function run() {
       };
       const result = await startupsCollection.insertOne(startup);
       res.json(result);
-      console.log(`A document was inserted with the _id: ${result.insertedId}`);
     });
 
     app.get("/api/startups", async (req, res) => {
@@ -51,14 +50,14 @@ async function run() {
         .find(query)
         .sort({ _id: -1 })
         .toArray();
-      console.log(startups);
+
       res.json(startups);
     });
     app.get("/api/startups/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const startup = await startupsCollection.findOne(filter);
-      console.log(startup);
+
       res.json(startup);
     });
 
@@ -66,8 +65,6 @@ async function run() {
       const email = req.params.email;
       const filter = { FounderEmail: email };
       const startup = await startupsCollection.find(filter).toArray();
-      console.log("wedqwed", startup);
-      console.log(filter, "wefser");
 
       res.json(startup);
     });
@@ -145,7 +142,7 @@ async function run() {
         .limit(limit)
         .sort({ _id: -1 })
         .toArray();
-      console.log(opportunities);
+
       res.json(opportunities);
     });
     app.get("/api/opportunity/:id", async (req, res) => {
@@ -157,9 +154,8 @@ async function run() {
     });
     app.patch("/api/opportunity/:id", async (req, res) => {
       const id = req.params.id;
-      console.log(id);
+
       const data = req.body;
-      console.log(data);
 
       const filter = { _id: new ObjectId(id) };
       const updateDoc = {
@@ -180,7 +176,6 @@ async function run() {
       const opportunitise = await opportunitiesCollection
         .find(filter)
         .toArray();
-      console.log(opportunitise);
 
       res.json(opportunitise);
     });
@@ -217,7 +212,7 @@ async function run() {
     app.get("/api/application/:email", async (req, res) => {
       const query = {};
       const email = req.params.email;
-      console.log(email);
+
       if (req?.query?.opportunityId) {
         query.opportunityId = req?.query?.opportunityId;
       }
@@ -227,7 +222,7 @@ async function run() {
           ApplicantEmail: email,
         })
         .toArray();
-      console.log("refhwri we", result);
+
       res.json(result);
     });
     app.get("/api/application/:email/:id", async (req, res) => {
@@ -238,7 +233,7 @@ async function run() {
         ApplicantEmail: email,
         opportunityId: id,
       });
-      console.log("refhwri we", result);
+
       res.json(result);
     });
     app.get("/api/applications/:id", async (req, res) => {
@@ -249,7 +244,7 @@ async function run() {
           startupId: id,
         })
         .toArray();
-      console.log("refhwri we2", result);
+
       res.json(result);
     });
     app.patch("/api/applications/:id", async (req, res) => {
@@ -265,7 +260,7 @@ async function run() {
           },
         },
       );
-      console.log("This is startup", status);
+
       res.json(result);
     });
     // Send a ping to confirm a successful connection
