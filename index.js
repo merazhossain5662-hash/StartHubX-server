@@ -20,6 +20,7 @@ const client = new MongoClient(process.env.URI, {
     deprecationErrors: true,
   },
 });
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -29,6 +30,25 @@ async function run() {
     const opportunitiesCollection = database.collection("Opportunities");
     const applicationCollection = database.collection("Applications");
 
+    async function createTextIndex() {
+      try {
+        await opportunitiesCollection.createIndex(
+          {
+            title: "text",
+            companyName: "text",
+            tags: "text",
+            description: "text",
+          },
+          { name: "OpportunityTextIndex" },
+        );
+        console.log("Text index ready!");
+      } catch (err) {
+        // Ignored if index already exists or has different fields
+        console.log("Index setup notice:", err.message);
+      }
+    }
+
+    createTextIndex();
     app.post("/api/startups", async (req, res) => {
       const data = req.body;
       const startup = {
@@ -111,7 +131,20 @@ async function run() {
 
     app.get("/api/opportunity", async (req, res) => {
       const query = {};
+      if (req.query?.search) {
+        const search = req.query.search.trim();
+        if (search.length > 0) {
+          const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
+          const searchPattern = new RegExp(escapedSearch, "i");
+
+          query.$or = [
+            { Title: searchPattern },
+            { industry: searchPattern },
+            { Skills: searchPattern },
+          ];
+        }
+      }
       if (req.query?.workType) {
         const typeArray = req.query?.workType
           .split(",")
