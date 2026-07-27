@@ -115,6 +115,29 @@ async function run() {
     app.get("/api/opportunity", async (req, res) => {
       const query = {};
 
+      if (req.query?.workType) {
+        const typeArray = req.query?.workType
+          .split(",")
+          .map((t) => t.trim())
+          .filter(Boolean);
+        if (typeArray.length > 0) {
+          const pattern = typeArray.join("|");
+          query.state = { $regex: `^(${pattern})$`, $options: "i" };
+        }
+      }
+      if (req.query?.industry) {
+        const industryType = req.query?.industry
+          .split(",")
+          .map((t) => {
+            t.trim();
+          })
+          .filter(Boolean);
+        if (industryType.length > 0) {
+          const pattern = industryType.join("|");
+          query.industry = { $regex: `^(${pattern})$`, $options: "i" };
+        }
+      }
+      console.log(query);
       const limit = req.query.limit ? Number(req.query.limit) : 0;
 
       const opportunities = await opportunitiesCollection
