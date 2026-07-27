@@ -123,15 +123,18 @@ async function run() {
         }
       }
       if (req.query?.industry) {
+        console.log(req.query?.industry);
+
         const industryType = req.query?.industry
           .split(",")
-          .map((t) => {
-            t.trim();
-          })
+          .map((t) => t.trim())
           .filter(Boolean);
+        console.log(industryType);
+
         if (industryType.length > 0) {
           const pattern = industryType.join("|");
           query.industry = { $regex: `^(${pattern})$`, $options: "i" };
+          console.log(query?.industry);
         }
       }
       console.log(query);
