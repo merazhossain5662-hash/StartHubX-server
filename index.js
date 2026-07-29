@@ -21,295 +21,288 @@ const client = new MongoClient(process.env.URI, {
   },
 });
 
-async function run() {
-  try {
-    // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
-    const database = client.db("Start_Hub_X");
-    const startupsCollection = database.collection("Startups");
-    const opportunitiesCollection = database.collection("Opportunities");
-    const applicationCollection = database.collection("Applications");
+try {
+  // Connect the client to the server	(optional starting in v4.7)
+  await client.connect();
+  const database = client.db("Start_Hub_X");
+  const startupsCollection = database.collection("Startups");
+  const opportunitiesCollection = database.collection("Opportunities");
+  const applicationCollection = database.collection("Applications");
 
-    async function createTextIndex() {
-      try {
-        await opportunitiesCollection.createIndex(
-          {
-            title: "text",
-            companyName: "text",
-            tags: "text",
-            description: "text",
-          },
-          { name: "OpportunityTextIndex" },
-        );
-        console.log("Text index ready!");
-      } catch (err) {
-        // Ignored if index already exists or has different fields
-        console.log("Index setup notice:", err.message);
+  async function createTextIndex() {
+    try {
+      await opportunitiesCollection.createIndex(
+        {
+          title: "text",
+          companyName: "text",
+          tags: "text",
+          description: "text",
+        },
+        { name: "OpportunityTextIndex" },
+      );
+      console.log("Text index ready!");
+    } catch (err) {
+      // Ignored if index already exists or has different fields
+      console.log("Index setup notice:", err.message);
+    }
+  }
+
+  createTextIndex();
+  app.post("/api/startups", async (req, res) => {
+    const data = req.body;
+    const startup = {
+      ...data,
+      UpdatedAt: new Date().toLocaleString("en-US", {
+        timeZone: "Asia/Dhaka",
+      }),
+      createdAt: new Date().toLocaleString("en-US", {
+        timeZone: "Asia/Dhaka",
+      }),
+    };
+    const result = await startupsCollection.insertOne(startup);
+    res.json(result);
+  });
+
+  app.get("/api/startups", async (req, res) => {
+    const query = {};
+    const startups = await startupsCollection
+      .find(query)
+      .sort({ _id: -1 })
+      .toArray();
+
+    res.json(startups);
+  });
+  app.get("/api/startups/:id", async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) };
+    const startup = await startupsCollection.findOne(filter);
+
+    res.json(startup);
+  });
+
+  app.get("/api/startup/:email", async (req, res) => {
+    const email = req.params.email;
+    const filter = { FounderEmail: email };
+    const startup = await startupsCollection.find(filter).toArray();
+
+    res.json(startup);
+  });
+  app.delete("/api/startups/:id", async (req, res) => {
+    const id = req.params.id;
+
+    const filter = { _id: new ObjectId(id) };
+    const result = await startupsCollection.deleteOne(filter);
+    res.json(result);
+  });
+  app.patch("/api/startups/:id", async (req, res) => {
+    const id = req.params.id;
+
+    const data = req.body;
+
+    const filter = { _id: new ObjectId(id) };
+    const updateDoc = {
+      $set: {
+        ...data,
+        UpdatedAt: new Date().toLocaleString("en-US", {
+          timeZone: "Asia/Dhaka",
+        }),
+      },
+    };
+
+    const result = await startupsCollection.updateOne(filter, updateDoc);
+    res.json(result);
+  });
+
+  app.post("/api/opportunity", async (req, res) => {
+    const data = req.body;
+    const opportunity = {
+      ...data,
+      UpdatedAt: new Date().toLocaleString("en-US", {
+        timeZone: "Asia/Dhaka",
+      }),
+      createdAt: new Date().toLocaleString("en-US", {
+        timeZone: "Asia/Dhaka",
+      }),
+    };
+    const result = await opportunitiesCollection.insertOne(opportunity);
+    res.json(result);
+  });
+
+  app.get("/api/opportunity", async (req, res) => {
+    const query = {};
+    if (req.query?.search) {
+      const search = req.query.search.trim();
+      if (search.length > 0) {
+        const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+        const searchPattern = new RegExp(escapedSearch, "i");
+
+        query.$or = [
+          { Title: searchPattern },
+          { industry: searchPattern },
+          { Skills: searchPattern },
+        ];
       }
     }
+    if (req.query?.workType) {
+      const typeArray = req.query?.workType
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+      if (typeArray.length > 0) {
+        const pattern = typeArray.join("|");
+        query.state = { $regex: `^(${pattern})$`, $options: "i" };
+      }
+    }
+    if (req.query?.industry) {
+      console.log(req.query?.industry);
 
-    createTextIndex();
-    app.post("/api/startups", async (req, res) => {
-      const data = req.body;
-      const startup = {
+      const industryType = req.query?.industry
+        .split(",")
+        .map((t) => t.trim())
+        .filter(Boolean);
+      console.log(industryType);
+
+      if (industryType.length > 0) {
+        const pattern = industryType.join("|");
+        query.industry = { $regex: `^(${pattern})$`, $options: "i" };
+        console.log(query?.industry);
+      }
+    }
+    console.log(query);
+    const limit = req.query.limit ? Number(req.query.limit) : 0;
+
+    const opportunities = await opportunitiesCollection
+      .find(query)
+      .limit(limit)
+      .sort({ _id: -1 })
+      .toArray();
+
+    res.json(opportunities);
+  });
+  app.get("/api/opportunity/:id", async (req, res) => {
+    const id = req.params.id;
+    const opportunity = await opportunitiesCollection.findOne({
+      _id: new ObjectId(id),
+    });
+    res.json(opportunity);
+  });
+  app.patch("/api/opportunity/:id", async (req, res) => {
+    const id = req.params.id;
+
+    const data = req.body;
+
+    const filter = { _id: new ObjectId(id) };
+    const updateDoc = {
+      $set: {
         ...data,
         UpdatedAt: new Date().toLocaleString("en-US", {
           timeZone: "Asia/Dhaka",
         }),
-        createdAt: new Date().toLocaleString("en-US", {
-          timeZone: "Asia/Dhaka",
-        }),
-      };
-      const result = await startupsCollection.insertOne(startup);
-      res.json(result);
-    });
+      },
+    };
 
-    app.get("/api/startups", async (req, res) => {
-      const query = {};
-      const startups = await startupsCollection
-        .find(query)
-        .sort({ _id: -1 })
-        .toArray();
+    const result = await opportunitiesCollection.updateOne(filter, updateDoc);
+    res.json(result);
+  });
+  app.get("/api/opportunitise/:id", async (req, res) => {
+    const id = req.params.id;
+    const filter = { startupId: id };
+    const opportunitise = await opportunitiesCollection.find(filter).toArray();
 
-      res.json(startups);
-    });
-    app.get("/api/startups/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const startup = await startupsCollection.findOne(filter);
-
-      res.json(startup);
-    });
-
-    app.get("/api/startup/:email", async (req, res) => {
-      const email = req.params.email;
-      const filter = { FounderEmail: email };
-      const startup = await startupsCollection.find(filter).toArray();
-
-      res.json(startup);
-    });
-    app.delete("/api/startups/:id", async (req, res) => {
-      const id = req.params.id;
-
-      const filter = { _id: new ObjectId(id) };
-      const result = await startupsCollection.deleteOne(filter);
-      res.json(result);
-    });
-    app.patch("/api/startups/:id", async (req, res) => {
-      const id = req.params.id;
-
-      const data = req.body;
-
-      const filter = { _id: new ObjectId(id) };
-      const updateDoc = {
-        $set: {
-          ...data,
-          UpdatedAt: new Date().toLocaleString("en-US", {
-            timeZone: "Asia/Dhaka",
-          }),
-        },
-      };
-
-      const result = await startupsCollection.updateOne(filter, updateDoc);
-      res.json(result);
-    });
-
-    app.post("/api/opportunity", async (req, res) => {
-      const data = req.body;
-      const opportunity = {
-        ...data,
-        UpdatedAt: new Date().toLocaleString("en-US", {
-          timeZone: "Asia/Dhaka",
-        }),
-        createdAt: new Date().toLocaleString("en-US", {
-          timeZone: "Asia/Dhaka",
-        }),
-      };
-      const result = await opportunitiesCollection.insertOne(opportunity);
-      res.json(result);
-    });
-
-    app.get("/api/opportunity", async (req, res) => {
-      const query = {};
-      if (req.query?.search) {
-        const search = req.query.search.trim();
-        if (search.length > 0) {
-          const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
-          const searchPattern = new RegExp(escapedSearch, "i");
-
-          query.$or = [
-            { Title: searchPattern },
-            { industry: searchPattern },
-            { Skills: searchPattern },
-          ];
-        }
-      }
-      if (req.query?.workType) {
-        const typeArray = req.query?.workType
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
-        if (typeArray.length > 0) {
-          const pattern = typeArray.join("|");
-          query.state = { $regex: `^(${pattern})$`, $options: "i" };
-        }
-      }
-      if (req.query?.industry) {
-        console.log(req.query?.industry);
-
-        const industryType = req.query?.industry
-          .split(",")
-          .map((t) => t.trim())
-          .filter(Boolean);
-        console.log(industryType);
-
-        if (industryType.length > 0) {
-          const pattern = industryType.join("|");
-          query.industry = { $regex: `^(${pattern})$`, $options: "i" };
-          console.log(query?.industry);
-        }
-      }
-      console.log(query);
-      const limit = req.query.limit ? Number(req.query.limit) : 0;
-
-      const opportunities = await opportunitiesCollection
-        .find(query)
-        .limit(limit)
-        .sort({ _id: -1 })
-        .toArray();
-
-      res.json(opportunities);
-    });
-    app.get("/api/opportunity/:id", async (req, res) => {
-      const id = req.params.id;
-      const opportunity = await opportunitiesCollection.findOne({
-        _id: new ObjectId(id),
-      });
-      res.json(opportunity);
-    });
-    app.patch("/api/opportunity/:id", async (req, res) => {
-      const id = req.params.id;
-
-      const data = req.body;
-
-      const filter = { _id: new ObjectId(id) };
-      const updateDoc = {
-        $set: {
-          ...data,
-          UpdatedAt: new Date().toLocaleString("en-US", {
-            timeZone: "Asia/Dhaka",
-          }),
-        },
-      };
-
-      const result = await opportunitiesCollection.updateOne(filter, updateDoc);
-      res.json(result);
-    });
-    app.get("/api/opportunitise/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { startupId: id };
-      const opportunitise = await opportunitiesCollection
-        .find(filter)
-        .toArray();
-
-      res.json(opportunitise);
-    });
-    app.delete("/api/opportunity/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updetor = await applicationCollection.updateMany(
-        {
-          opportunityId: id,
-        },
-        {
-          $set: {
-            status: "Position Removed",
-            isOrphan: true,
-          },
-        },
-      );
-      const result = await opportunitiesCollection.deleteOne(filter);
-      res.json(result);
-    });
-    app.post("/api/application", async (req, res) => {
-      const data = req?.body;
-      const application = {
-        ...data,
-
-        createdAt: new Date().toLocaleString("en-US", {
-          timeZone: "Asia/Dhaka",
-        }),
-      };
-      const result = await applicationCollection.insertOne(application);
-
-      res.json(result);
-    });
-    app.get("/api/application/:email", async (req, res) => {
-      const query = {};
-      const email = req.params.email;
-
-      if (req?.query?.opportunityId) {
-        query.opportunityId = req?.query?.opportunityId;
-      }
-      const result = await applicationCollection
-        .find({
-          ...query,
-          ApplicantEmail: email,
-        })
-        .toArray();
-
-      res.json(result);
-    });
-    app.get("/api/application/:email/:id", async (req, res) => {
-      const email = req.params.email;
-      const id = req.params?.id;
-
-      const result = await applicationCollection.findOne({
-        ApplicantEmail: email,
+    res.json(opportunitise);
+  });
+  app.delete("/api/opportunity/:id", async (req, res) => {
+    const id = req.params.id;
+    const filter = { _id: new ObjectId(id) };
+    const updetor = await applicationCollection.updateMany(
+      {
         opportunityId: id,
-      });
-
-      res.json(result);
-    });
-    app.get("/api/applications/:id", async (req, res) => {
-      const id = req.params.id;
-
-      const result = await applicationCollection
-        .find({
-          startupId: id,
-        })
-        .toArray();
-
-      res.json(result);
-    });
-    app.patch("/api/applications/:id", async (req, res) => {
-      const id = req.params.id;
-      const status = req.body?.status;
-      const result = await applicationCollection.updateOne(
-        {
-          _id: new ObjectId(id),
+      },
+      {
+        $set: {
+          status: "Position Removed",
+          isOrphan: true,
         },
-        {
-          $set: {
-            status: status,
-          },
-        },
-      );
-
-      res.json(result);
-    });
-    // Send a ping to confirm a successful connection
-    // await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!",
+      },
     );
-  } finally {
-    // Ensures that the client will close when you finish/error
-    // await client.close();
-  }
+    const result = await opportunitiesCollection.deleteOne(filter);
+    res.json(result);
+  });
+  app.post("/api/application", async (req, res) => {
+    const data = req?.body;
+    const application = {
+      ...data,
+
+      createdAt: new Date().toLocaleString("en-US", {
+        timeZone: "Asia/Dhaka",
+      }),
+    };
+    const result = await applicationCollection.insertOne(application);
+
+    res.json(result);
+  });
+  app.get("/api/application/:email", async (req, res) => {
+    const query = {};
+    const email = req.params.email;
+
+    if (req?.query?.opportunityId) {
+      query.opportunityId = req?.query?.opportunityId;
+    }
+    const result = await applicationCollection
+      .find({
+        ...query,
+        ApplicantEmail: email,
+      })
+      .toArray();
+
+    res.json(result);
+  });
+  app.get("/api/application/:email/:id", async (req, res) => {
+    const email = req.params.email;
+    const id = req.params?.id;
+
+    const result = await applicationCollection.findOne({
+      ApplicantEmail: email,
+      opportunityId: id,
+    });
+
+    res.json(result);
+  });
+  app.get("/api/applications/:id", async (req, res) => {
+    const id = req.params.id;
+
+    const result = await applicationCollection
+      .find({
+        startupId: id,
+      })
+      .toArray();
+
+    res.json(result);
+  });
+  app.patch("/api/applications/:id", async (req, res) => {
+    const id = req.params.id;
+    const status = req.body?.status;
+    const result = await applicationCollection.updateOne(
+      {
+        _id: new ObjectId(id),
+      },
+      {
+        $set: {
+          status: status,
+        },
+      },
+    );
+
+    res.json(result);
+  });
+  // Send a ping to confirm a successful connection
+  // await client.db("admin").command({ ping: 1 });
+  console.log("Pinged your deployment. You successfully connected to MongoDB!");
+} finally {
+  // Ensures that the client will close when you finish/error
+  // await client.close();
 }
-run().catch(console.dir);
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
