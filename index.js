@@ -22,12 +22,20 @@ const client = new MongoClient(process.env.URI, {
 });
 
 // Connect the client to the server	(optional starting in v4.7)
-await client.connect();
-const database = client.db("Start_Hub_X");
-const startupsCollection = database.collection("Startups");
-const opportunitiesCollection = database.collection("Opportunities");
-const applicationCollection = database.collection("Applications");
 
+let startupsCollection;
+let opportunitiesCollection;
+let applicationCollection;
+
+async function connectDB() {
+  if (!startupsCollection) {
+    await client.connect();
+    const database = client.db("Start_Hub_X");
+    startupsCollection = database.collection("Startups");
+    opportunitiesCollection = database.collection("Opportunities");
+    applicationCollection = database.collection("Applications");
+  }
+}
 app.use(async (req, res, next) => {
   try {
     await connectDB();
