@@ -196,7 +196,7 @@ app.get("/api/opportunity", async (req, res) => {
   const opportunities = await opportunitiesCollection
     .find(query)
     .skip(skip)
-    .limit(perPage)
+    .limit(limit || perPage)
     .sort({ _id: -1 })
     .toArray();
   res.json({ opportunities, totalCount });
