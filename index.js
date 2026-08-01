@@ -194,6 +194,19 @@ app.get("/api/opportunity", async (req, res) => {
     .sort({ _id: -1 })
     .toArray();
 
+  if (req.query?.page) {
+    const page = Number(req.query.page);
+    const limit = req.query.perPage ? Number(req.query.perPage) : 10;
+    const skip = (page - 1) * limit;
+    positions = await opportunitiesCollection
+      .find(query)
+      .skip(skip)
+      .limit(limit)
+      .sort({ _id: -1 })
+      .toArray();
+    return res.json(positions);
+  }
+
   res.json(opportunities);
 });
 app.get("/api/opportunity/:id", async (req, res) => {
