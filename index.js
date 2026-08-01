@@ -188,11 +188,6 @@ app.get("/api/opportunity", async (req, res) => {
   console.log(query);
   const limit = req.query.limit ? Number(req.query.limit) : 0;
 
-  const opportunities = await opportunitiesCollection
-    .find(query)
-    .limit(limit)
-    .sort({ _id: -1 })
-    .toArray();
   const page = Number(req.query?.page) || 1;
   const perPage = Number(req.query?.perPage) || 8;
   const skip = (page - 1) * perPage;
