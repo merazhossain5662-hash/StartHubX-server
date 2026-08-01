@@ -207,7 +207,7 @@ app.get("/api/opportunity", async (req, res) => {
       .toArray();
     console.log(positions);
 
-    return res.json({ positions, totalCount });
+    return res.json({ opportunities: positions, totalCount });
   }
 
   res.json({ opportunities, totalCount: opportunities.length });
