@@ -196,9 +196,9 @@ app.get("/api/opportunity", async (req, res) => {
 
   if (req.query?.page) {
     const page = Number(req.query.page);
-    const limit = req.query.perPage ? Number(req.query.perPage) : 10;
+    const limit = Number(req.query.perPage) || 8;
     const skip = (page - 1) * limit;
-    positions = await opportunitiesCollection
+    const positions = await opportunitiesCollection
       .find(query)
       .skip(skip)
       .limit(limit)
@@ -234,7 +234,7 @@ app.patch("/api/opportunity/:id", async (req, res) => {
   const result = await opportunitiesCollection.updateOne(filter, updateDoc);
   res.json(result);
 });
-app.get("/api/opportunitise/:id", async (req, res) => {
+app.get("/api/opportunities/:id", async (req, res) => {
   const id = req.params.id;
   const filter = { startupId: id };
   const opportunitise = await opportunitiesCollection.find(filter).toArray();
