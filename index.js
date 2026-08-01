@@ -196,18 +196,21 @@ app.get("/api/opportunity", async (req, res) => {
 
   if (req.query?.page) {
     const page = Number(req.query.page);
-    const limit = Number(req.query.perPage) || 8;
-    const skip = (page - 1) * limit;
+    const perPage = Number(req.query.perPage) || 8;
+    const skip = (page - 1) * perPage;
+    const totalCount = await opportunitiesCollection.countDocuments(query);
     const positions = await opportunitiesCollection
       .find(query)
       .skip(skip)
-      .limit(limit)
+      .limit(perPage)
       .sort({ _id: -1 })
       .toArray();
-    return res.json(positions);
+    console.log(positions);
+
+    return res.json({ positions, totalCount });
   }
 
-  res.json(opportunities);
+  res.json({ opportunities, totalCount: opportunities.length });
 });
 app.get("/api/opportunity/:id", async (req, res) => {
   const id = req.params.id;
