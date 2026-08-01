@@ -193,24 +193,18 @@ app.get("/api/opportunity", async (req, res) => {
     .limit(limit)
     .sort({ _id: -1 })
     .toArray();
+  const page = Number(req.query?.page) || 1;
+  const perPage = Number(req.query?.perPage) || 8;
+  const skip = (page - 1) * perPage;
 
-  if (req.query?.page) {
-    const page = Number(req.query.page);
-    const perPage = Number(req.query.perPage) || 8;
-    const skip = (page - 1) * perPage;
-    const totalCount = await opportunitiesCollection.countDocuments(query);
-    const positions = await opportunitiesCollection
-      .find(query)
-      .skip(skip)
-      .limit(perPage)
-      .sort({ _id: -1 })
-      .toArray();
-    console.log(positions);
-
-    return res.json({ opportunities: positions, totalCount });
-  }
-
-  res.json({ opportunities, totalCount: opportunities.length });
+  const totalCount = await opportunitiesCollection.countDocuments(query);
+  const opportunities = await opportunitiesCollection
+    .find(query)
+    .skip(skip)
+    .limit(perPage)
+    .sort({ _id: -1 })
+    .toArray();
+  res.json({ opportunities, totalCount });
 });
 app.get("/api/opportunity/:id", async (req, res) => {
   const id = req.params.id;
