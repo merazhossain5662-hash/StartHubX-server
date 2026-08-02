@@ -45,6 +45,14 @@ app.use(async (req, res, next) => {
   }
 });
 
+async function backfillPlans() {
+  await db
+    .collection("user")
+    .updateMany({ plan: { $exists: false } }, { $set: { plan: "free" } });
+  console.log("Updated existing users with default plan.");
+}
+backfillPlans();
+
 async function createTextIndex() {
   try {
     await opportunitiesCollection.createIndex(
