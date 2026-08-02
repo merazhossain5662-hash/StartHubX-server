@@ -229,9 +229,10 @@ app.patch("/api/opportunity/:id", async (req, res) => {
 app.get("/api/opportunities/:id", async (req, res) => {
   const id = req.params.id;
   const filter = { startupId: id };
+  const totalOpps = await opportunitiesCollection.countDocuments(filter);
   const opportunitise = await opportunitiesCollection.find(filter).toArray();
 
-  res.json(opportunitise);
+  res.json({ opportunities: opportunitise, totalCount: totalOpps });
 });
 app.delete("/api/opportunity/:id", async (req, res) => {
   const id = req.params.id;
