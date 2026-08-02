@@ -46,7 +46,7 @@ app.use(async (req, res, next) => {
 });
 
 async function backfillPlans() {
-  await db
+  await database
     .collection("user")
     .updateMany({ plan: { $exists: false } }, { $set: { plan: "free" } });
   console.log("Updated existing users with default plan.");
