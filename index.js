@@ -26,11 +26,13 @@ const client = new MongoClient(process.env.URI, {
 let startupsCollection;
 let opportunitiesCollection;
 let applicationCollection;
+let userCollection;
 
 async function connectDB() {
   if (!startupsCollection) {
     await client.connect();
     const database = client.db("Start_Hub_X");
+    userCollection = database.collection("user");
     startupsCollection = database.collection("Startups");
     opportunitiesCollection = database.collection("Opportunities");
     applicationCollection = database.collection("Applications");
@@ -46,9 +48,10 @@ app.use(async (req, res, next) => {
 });
 
 async function backfillPlans() {
-  await database
-    .collection("user")
-    .updateMany({ plan: { $exists: false } }, { $set: { plan: "free" } });
+  await userCollection.updateMany(
+    { plan: { $exists: false } },
+    { $set: { plan: "free" } },
+  );
   console.log("Updated existing users with default plan.");
 }
 backfillPlans();
