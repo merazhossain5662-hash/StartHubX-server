@@ -38,14 +38,6 @@ async function connectDB() {
     applicationCollection = database.collection("Applications");
   }
 }
-app.use(async (req, res, next) => {
-  try {
-    await connectDB();
-    next();
-  } catch (error) {
-    res.status(500).json({ error: "Database connection failed" });
-  }
-});
 
 async function backfillPlans() {
   await userCollection.updateMany(
@@ -55,6 +47,14 @@ async function backfillPlans() {
   console.log("Updated existing users with default plan.");
 }
 backfillPlans();
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    res.status(500).json({ error: "Database connection failed" });
+  }
+});
 
 async function createTextIndex() {
   try {
