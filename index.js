@@ -36,7 +36,7 @@ async function connectDB() {
     opportunitiesCollection = database.collection("Opportunities");
     applicationCollection = database.collection("Applications");
     subscribetionCollection = database.collection("Subscribetions");
-    userCollection = database.collection("User");
+    userCollection = database.collection("user");
   }
 }
 app.use(async (req, res, next) => {
@@ -332,6 +332,8 @@ app.post("/api/subscribetion", async (req, res) => {
   });
 
   const filter = req?.body?.userEmail;
+  console.log(filter);
+
   const userChengedData = await userCollection.updateOne(
     {
       email: filter,
