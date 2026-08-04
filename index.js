@@ -26,7 +26,8 @@ const client = new MongoClient(process.env.URI, {
 let startupsCollection;
 let opportunitiesCollection;
 let applicationCollection;
-
+let subscribetionCollection;
+let userCollection;
 async function connectDB() {
   if (!startupsCollection) {
     await client.connect();
@@ -34,6 +35,8 @@ async function connectDB() {
     startupsCollection = database.collection("Startups");
     opportunitiesCollection = database.collection("Opportunities");
     applicationCollection = database.collection("Applications");
+    subscribetionCollection = database.collection("Subscribetions");
+    userCollection = database.collection("User");
   }
 }
 app.use(async (req, res, next) => {
@@ -316,6 +319,29 @@ app.patch("/api/applications/:id", async (req, res) => {
     },
   );
 
+  res.json(result);
+});
+
+app.post("/api/subscribetion", async (req, res) => {
+  const data = req.body;
+  const result = await subscribetionCollection.insertOne({
+    ...data,
+    createdAt: new Date().toLocaleString("en-US", {
+      timeZone: "Asia/Dhaka",
+    }),
+  });
+
+  const filter = req?.body?.userEmail;
+  const userChengedData = await userCollection.updateOne(
+    {
+      email: filter,
+    },
+    {
+      $set: {
+        plan: req?.body?.plan,
+      },
+    },
+  );
   res.json(result);
 });
 // Send a ping to confirm a successful connection
