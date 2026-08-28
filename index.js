@@ -350,7 +350,7 @@ app.post("/api/subscribetion", async (req, res) => {
 app.get("/api/admin/startups", async (req, res) => {
   const query = {};
   if (req.query?.search) {
-    const search = req.query.search.trim();
+    const search = decodeURIComponent(req.query.search).trim();
     if (search.length > 0) {
       const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
