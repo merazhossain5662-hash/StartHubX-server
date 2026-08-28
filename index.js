@@ -61,7 +61,6 @@ async function createTextIndex() {
     );
     console.log("Text index ready!");
   } catch (err) {
-    // Ignored if index already exists or has different fields
     console.log("Index setup notice:", err.message);
   }
 }
@@ -240,7 +239,7 @@ app.get("/api/opportunities/:id", async (req, res) => {
 app.delete("/api/opportunity/:id", async (req, res) => {
   const id = req.params.id;
   const filter = { _id: new ObjectId(id) };
-  const updetor = await applicationCollection.updateMany(
+  const updetor = await applicationCollection.updateOne(
     {
       opportunityId: id,
     },
@@ -346,6 +345,17 @@ app.post("/api/subscribetion", async (req, res) => {
   );
   res.json(result);
 });
+
+//admin apis
+app.get("/api/admin/startups", async (req, res) => {
+  const query = {};
+  const startups = await startupsCollection
+    .find(query)
+    .sort({ _id: -1 })
+    .toArray();
+  res.json(startups);
+});
+
 // Send a ping to confirm a successful connection
 // await client.db("admin").command({ ping: 1 });
 console.log("Pinged your deployment. You successfully connected to MongoDB!");
