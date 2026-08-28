@@ -349,6 +349,21 @@ app.post("/api/subscribetion", async (req, res) => {
 //admin apis
 app.get("/api/admin/startups", async (req, res) => {
   const query = {};
+  if (req.query?.search) {
+    const search = req.query.search.trim();
+    if (search.length > 0) {
+      const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+      const searchPattern = new RegExp(escapedSearch, "i");
+
+      query.$or = [
+        { name: searchPattern },
+        { state: searchPattern },
+        { FounderEmail: searchPattern },
+        { FundingStage: searchPattern },
+      ];
+    }
+  }
   const startups = await startupsCollection
     .find(query)
     .sort({ _id: -1 })
