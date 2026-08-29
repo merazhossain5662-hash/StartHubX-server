@@ -378,7 +378,19 @@ app.get("/api/admin/subscriptions", async (req, res) => {
     .toArray();
   res.json(subscriptions);
 });
+app.get("/api/admin/overview", async (req, res) => {
+  const totalStartups = await startupsCollection.countDocuments({});
+  const totalOpportunities = await opportunitiesCollection.countDocuments({});
+  const totalUsers = await userCollection.countDocuments({});
+  const totalSubscriptions = await subscribetionCollection.countDocuments({});
 
+  res.json({
+    totalStartups,
+    totalOpportunities,
+    totalUsers,
+    totalSubscriptions,
+  });
+});
 // Send a ping to confirm a successful connection
 // await client.db("admin").command({ ping: 1 });
 console.log("Pinged your deployment. You successfully connected to MongoDB!");
