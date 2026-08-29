@@ -384,11 +384,22 @@ app.get("/api/admin/overview", async (req, res) => {
   const totalUsers = await userCollection.countDocuments({});
   const totalSubscriptions = await subscribetionCollection.countDocuments({});
 
+  const revenueRes = await subscribetionCollection
+    .aggregate([
+      { $match: { paymentStatus: "paid" } },
+      { $group: { _id: null, total: { $sum: "$amountTotal" } } },
+    ])
+    .toArray();
+
+  const totalRevenueInCents = revenueRes[0]?.total || 0;
+  const totalRevenue = totalRevenueInCents / 100;
+
   res.json({
     totalStartups,
     totalOpportunities,
     totalUsers,
     totalSubscriptions,
+    totalRevenue,
   });
 });
 // Send a ping to confirm a successful connection
