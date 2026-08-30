@@ -83,6 +83,9 @@ app.post("/api/startups", async (req, res) => {
 
 app.get("/api/startups", async (req, res) => {
   const query = {};
+  if (req.query?.status) {
+    query.status = req.query.status;
+  }
   const startups = await startupsCollection
     .find(query)
     .sort({ _id: -1 })
