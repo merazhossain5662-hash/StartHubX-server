@@ -371,6 +371,28 @@ app.get("/api/admin/startups", async (req, res) => {
   res.json(startups);
 });
 
+app.patch("/api/admin/startups/:id", async (req, res) => {
+  const id = req.params.id;
+  const filter = { _id: new ObjectId(id) };
+  const updateDoc = {
+    $set: {
+      status: req.body.status,
+      UpdatedAt: new Date().toLocaleString("en-US", {
+        timeZone: "Asia/Dhaka",
+      }),
+    },
+  };
+  const result = await startupsCollection.updateOne(filter, updateDoc);
+  res.json(result);
+});
+
+app.delete("/api/admin/startups/:id", async (req, res) => {
+  const id = req.params.id;
+  const filter = { _id: new ObjectId(id) };
+  const result = await startupsCollection.deleteOne(filter);
+  res.json(result);
+});
+
 app.get("/api/admin/subscriptions", async (req, res) => {
   const subscriptions = await subscribetionCollection
     .find({})
