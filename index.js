@@ -66,6 +66,29 @@ async function createTextIndex() {
 }
 
 createTextIndex();
+app.patch("/api/user/roler/:email", async (req, res) => {
+  const email = req.params.email;
+
+  if (req.body?.role) {
+    const role = req.body.role;
+  }
+
+  const filter = { email: email };
+  const updateDoc = {
+    $set: {
+      role: role,
+      UpdatedAt: new Date().toLocaleString("en-US", {
+        timeZone: "Asia/Dhaka",
+      }),
+    },
+  };
+
+  const result = await userCollection.updateOne(filter, updateDoc, {
+    upsert: true,
+  });
+  res.json(result);
+});
+
 app.post("/api/startups", async (req, res) => {
   const data = req.body;
   const startup = {
