@@ -69,14 +69,10 @@ createTextIndex();
 app.patch("/api/user/roler/:email", async (req, res) => {
   const email = req.params.email;
 
-  if (req.body?.role) {
-    const role = req.body.role;
-  }
-
   const filter = { email: email };
   const updateDoc = {
     $set: {
-      role: role,
+      role: req.body.role,
       UpdatedAt: new Date().toLocaleString("en-US", {
         timeZone: "Asia/Dhaka",
       }),
