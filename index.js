@@ -71,7 +71,7 @@ const jwks = createRemoteJWKSet(
 
 const verifyAdmin = async (req, res, next) => {
   const authHeader = req.headers.Authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+  if (!authHeader) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 
