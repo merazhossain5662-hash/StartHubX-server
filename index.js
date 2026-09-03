@@ -66,11 +66,11 @@ async function createTextIndex() {
   }
 }
 const jwks = createRemoteJWKSet(
-  new URL(`${process.env.CLIENT_LIVE_URI}/api/auth/jwks`),
+  new URL(`${process.env.CLIENT_LIVE_URI}api/auth/jwks`),
 );
 
 const verifyAdmin = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
+  const authHeader = req.headers.Authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ message: "Unauthorized" });
   }
