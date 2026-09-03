@@ -96,7 +96,7 @@ const verifyAdmin = async (req, res, next) => {
 };
 
 createTextIndex();
-app.patch("/api/user/roler/:email", verifyAdmin, async (req, res) => {
+app.patch("/api/user/roler/:email", async (req, res) => {
   const email = req.params.email;
 
   const filter = { email: email };
@@ -399,7 +399,7 @@ app.post("/api/subscribetion", async (req, res) => {
 });
 
 //admin apis
-app.get("/api/admin/startups", async (req, res) => {
+app.get("/api/admin/startups", verifyAdmin, async (req, res) => {
   const query = {};
   if (req.query?.search) {
     const search = decodeURIComponent(req.query.search).trim();
@@ -423,7 +423,7 @@ app.get("/api/admin/startups", async (req, res) => {
   res.json(startups);
 });
 
-app.patch("/api/admin/startups/:id", async (req, res) => {
+app.patch("/api/admin/startups/:id", verifyAdmin, async (req, res) => {
   const id = req.params.id;
   const filter = { _id: new ObjectId(id) };
   const updateDoc = {
@@ -438,21 +438,21 @@ app.patch("/api/admin/startups/:id", async (req, res) => {
   res.json(result);
 });
 
-app.delete("/api/admin/startups/:id", async (req, res) => {
+app.delete("/api/admin/startups/:id", verifyAdmin, async (req, res) => {
   const id = req.params.id;
   const filter = { _id: new ObjectId(id) };
   const result = await startupsCollection.deleteOne(filter);
   res.json(result);
 });
 
-app.get("/api/admin/subscriptions", async (req, res) => {
+app.get("/api/admin/subscriptions", verifyAdmin, async (req, res) => {
   const subscriptions = await subscribetionCollection
     .find({})
     .sort({ _id: -1 })
     .toArray();
   res.json(subscriptions);
 });
-app.get("/api/admin/overview", async (req, res) => {
+app.get("/api/admin/overview", verifyAdmin, async (req, res) => {
   const totalStartups = await startupsCollection.countDocuments({});
   const totalOpportunities = await opportunitiesCollection.countDocuments({});
   const totalUsers = await userCollection.countDocuments({});
