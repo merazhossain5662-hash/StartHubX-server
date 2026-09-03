@@ -72,12 +72,12 @@ const jwks = createRemoteJWKSet(
 const verifyAdmin = async (req, res, next) => {
   const authHeader = req.headers.Authorization;
   if (!authHeader) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized1" });
   }
 
   const token = authHeader.split(" ")[1];
   if (!token) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized2" });
   }
 
   try {
@@ -91,7 +91,7 @@ const verifyAdmin = async (req, res, next) => {
     next();
   } catch (error) {
     console.error("JWT verification error:", error);
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: "Unauthorized3" });
   }
 };
 
