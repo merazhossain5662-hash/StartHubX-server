@@ -3,6 +3,7 @@ const { ObjectId } = require("mongodb");
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const { jwtVerify } = require("jose-cjs");
 
 dotenv.config();
 const app = express();
@@ -64,9 +65,38 @@ async function createTextIndex() {
     console.log("Index setup notice:", err.message);
   }
 }
+const jwks = createRemoteJWKSet(
+  new URL(`${process.env.CLIENT_LIVE_URI}api/auth/jwks`),
+);
+
+const verifyAdmin = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const { payload } = await jwtVerify(token, jwks);
+
+    if (payload?.role !== "admin") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    console.log("Admin verified:", payload);
+    next();
+  } catch (error) {
+    console.error("JWT verification error:", error);
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+};
 
 createTextIndex();
-app.patch("/api/user/roler/:email", async (req, res) => {
+app.patch("/api/user/roler/:email", verifyAdmin, async (req, res) => {
   const email = req.params.email;
 
   const filter = { email: email };
