@@ -79,7 +79,7 @@ const verifyAdmin = async (req, res, next) => {
   if (!token) {
     return res.status(401).json({ message: "Unauthorized2" });
   }
-
+  console.log("Token received for verification:", token);
   try {
     const { payload } = await jwtVerify(token, jwks, {
       issuer: "https://start-hub-x-client.vercel.app",
