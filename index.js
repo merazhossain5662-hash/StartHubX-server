@@ -101,6 +101,39 @@ const verifyAdmin = async (req, res, next) => {
   }
 };
 
+const verifyCollaboretor = async (req, res, next) => {
+  const authHeader = req.headers.Authorization || req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized2" });
+  }
+  console.log("Token received for verification:", token);
+  try {
+    const { payload } = await jwtVerify(token, jwks, {
+      issuer: "https://start-hub-x-client.vercel.app",
+      audience: "https://start-hub-x-client.vercel.app",
+      algorithms: ["EdDSA"],
+    });
+
+    if (
+      payload?.role !== "collaborator" &&
+      req?.params?.email !== payload?.email
+    ) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    console.log("Collaborator verified:", payload);
+    next();
+  } catch (error) {
+    console.error("JWT verification error:", error);
+    return res.status(401).json({ message: "Unauthorized3" });
+  }
+};
+
 app.patch("/api/user/roler/:email", async (req, res) => {
   const email = req.params.email;
 
@@ -323,7 +356,7 @@ app.post("/api/application", async (req, res) => {
 
   res.json(result);
 });
-app.get("/api/application/:email", async (req, res) => {
+app.get("/api/application/:email", verifyCollaboretor, async (req, res) => {
   const query = {};
   const email = req.params.email;
 
@@ -339,7 +372,7 @@ app.get("/api/application/:email", async (req, res) => {
 
   res.json(result);
 });
-app.get("/api/application/:email/:id", async (req, res) => {
+app.get("/api/application/:email/:id", verifyCollaboretor, async (req, res) => {
   const email = req.params.email;
   const id = req.params?.id;
 
