@@ -66,7 +66,7 @@ async function createTextIndex() {
   }
 }
 const jwks = createRemoteJWKSet(
-  new URL(`${process.env.CLIENT_LIVE_URI}/api/auth/jwks`),
+  new URL("https://start-hub-x-client.vercel.app/api/auth/jwks"),
 );
 
 const verifyAdmin = async (req, res, next) => {
@@ -82,8 +82,8 @@ const verifyAdmin = async (req, res, next) => {
 
   try {
     const { payload } = await jwtVerify(token, jwks, {
-      issuer: process.env.CLIENT_LIVE_URI,
-      audience: process.env.CLIENT_LIVE_URI,
+      issuer: "https://start-hub-x-client.vercel.app",
+      audience: "https://start-hub-x-client.vercel.app",
     });
 
     if (payload?.role !== "admin") {
