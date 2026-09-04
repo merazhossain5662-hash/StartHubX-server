@@ -38,6 +38,8 @@ async function connectDB() {
     applicationCollection = database.collection("Applications");
     subscribetionCollection = database.collection("Subscribetions");
     userCollection = database.collection("user");
+
+    createTextIndex();
   }
 }
 app.use(async (req, res, next) => {
@@ -66,7 +68,6 @@ async function createTextIndex() {
   }
 }
 
-createTextIndex();
 const jwks = createRemoteJWKSet(
   new URL("https://start-hub-x-client.vercel.app/api/auth/jwks"),
 );
@@ -86,7 +87,6 @@ const verifyAdmin = async (req, res, next) => {
     const { payload } = await jwtVerify(token, jwks, {
       issuer: "https://start-hub-x-client.vercel.app",
       audience: "https://start-hub-x-client.vercel.app",
-      algorithms: ["EdDSA", "RS256", "ES256"],
     });
 
     if (payload?.role !== "admin") {
