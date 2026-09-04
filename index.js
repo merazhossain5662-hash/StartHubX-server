@@ -86,6 +86,7 @@ const verifyAdmin = async (req, res, next) => {
     const { payload } = await jwtVerify(token, jwks, {
       issuer: "https://start-hub-x-client.vercel.app",
       audience: "https://start-hub-x-client.vercel.app",
+      algorithms: ["EdDSA"],
     });
 
     if (payload?.role !== "admin") {
