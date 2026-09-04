@@ -65,6 +65,8 @@ async function createTextIndex() {
     console.log("Index setup notice:", err.message);
   }
 }
+
+createTextIndex();
 const jwks = createRemoteJWKSet(
   new URL("https://start-hub-x-client.vercel.app/api/auth/jwks"),
 );
@@ -99,7 +101,6 @@ const verifyAdmin = async (req, res, next) => {
   }
 };
 
-createTextIndex();
 app.patch("/api/user/roler/:email", async (req, res) => {
   const email = req.params.email;
 
