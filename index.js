@@ -1,9 +1,8 @@
-const express = require("express");
-const { ObjectId } = require("mongodb");
-const { MongoClient, ServerApiVersion } = require("mongodb");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const { jwtVerify, createRemoteJWKSet } = require("jose-cjs");
+import express from "express";
+import { MongoClient, ServerApiVersion, ObjectId } from "mongodb";
+import cors from "cors";
+import dotenv from "dotenv";
+import { createRemoteJWKSet, jwtVerify } from "jose";
 
 dotenv.config();
 const app = express();
