@@ -81,7 +81,10 @@ const verifyAdmin = async (req, res, next) => {
   }
 
   try {
-    const { payload } = await jwtVerify(token, jwks);
+    const { payload } = await jwtVerify(token, jwks, {
+      issuer: process.env.CLIENT_LIVE_URI,
+      audience: process.env.CLIENT_LIVE_URI,
+    });
 
     if (payload?.role !== "admin") {
       return res.status(403).json({ message: "Forbidden" });
