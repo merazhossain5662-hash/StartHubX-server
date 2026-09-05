@@ -119,11 +119,13 @@ const verifyCollaboretor = async (req, res, next) => {
       algorithms: ["EdDSA"],
     });
 
-    if (
-      payload?.role !== "collaborator" &&
-      req?.params?.email !== payload?.email
-    ) {
+    if (payload?.role !== "collaborator") {
       return res.status(403).json({ message: "Forbidden" });
+    }
+    if (req.params.email) {
+      if (payload?.email !== req.params.email) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
     }
 
     console.log("Collaborator verified:", payload);
@@ -133,7 +135,45 @@ const verifyCollaboretor = async (req, res, next) => {
     return res.status(401).json({ message: "Unauthorized3" });
   }
 };
+const verifyFounder = async (req, res, next) => {
+  const authHeader = req.headers.Authorization || req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized2" });
+  }
+  console.log("Token received for verification:", token);
+  try {
+    const { payload } = await jwtVerify(token, jwks, {
+      issuer: "https://start-hub-x-client.vercel.app",
+      audience: "https://start-hub-x-client.vercel.app",
+      algorithms: ["EdDSA"],
+    });
+
+    if (payload?.role !== "founder") {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    if (req.params.email) {
+      if (payload?.email !== req.params.email) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+    }
+    if (req.params?.id) {
+      if (payload?.id !== req.params.id) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+    }
+
+    console.log("Founder verified:", payload);
+    next();
+  } catch (error) {
+    console.error("JWT verification error:", error);
+    return res.status(401).json({ message: "Unauthorized3" });
+  }
+};
 app.patch("/api/user/roler/:email", async (req, res) => {
   const email = req.params.email;
 
@@ -153,7 +193,7 @@ app.patch("/api/user/roler/:email", async (req, res) => {
   res.json(result);
 });
 
-app.post("/api/startups", async (req, res) => {
+app.post("/api/startups", verifyFounder, async (req, res) => {
   const data = req.body;
   const startup = {
     ...data,
@@ -188,21 +228,21 @@ app.get("/api/startups/:id", async (req, res) => {
   res.json(startup);
 });
 
-app.get("/api/startup/:email", async (req, res) => {
+app.get("/api/startup/:email", verifyFounder, async (req, res) => {
   const email = req.params.email;
   const filter = { FounderEmail: email };
   const startup = await startupsCollection.find(filter).toArray();
 
   res.json(startup);
 });
-app.delete("/api/startups/:id", async (req, res) => {
+app.delete("/api/startups/:id", verifyFounder, async (req, res) => {
   const id = req.params.id;
 
   const filter = { _id: new ObjectId(id) };
   const result = await startupsCollection.deleteOne(filter);
   res.json(result);
 });
-app.patch("/api/startups/:id", async (req, res) => {
+app.patch("/api/startups/:id", verifyFounder, async (req, res) => {
   const id = req.params.id;
 
   const data = req.body;
@@ -221,7 +261,7 @@ app.patch("/api/startups/:id", async (req, res) => {
   res.json(result);
 });
 
-app.post("/api/opportunity", async (req, res) => {
+app.post("/api/opportunity", verifyFounder, async (req, res) => {
   const data = req.body;
   const opportunity = {
     ...data,
@@ -300,7 +340,7 @@ app.get("/api/opportunity/:id", async (req, res) => {
   });
   res.json(opportunity);
 });
-app.patch("/api/opportunity/:id", async (req, res) => {
+app.patch("/api/opportunity/:id", verifyFounder, async (req, res) => {
   const id = req.params.id;
 
   const data = req.body;
@@ -326,7 +366,7 @@ app.get("/api/opportunities/:id", async (req, res) => {
 
   res.json({ opportunities: opportunitise, totalCount: totalOpps });
 });
-app.delete("/api/opportunity/:id", async (req, res) => {
+app.delete("/api/opportunity/:id", verifyFounder, async (req, res) => {
   const id = req.params.id;
   const filter = { _id: new ObjectId(id) };
   const updetor = await applicationCollection.updateOne(
@@ -343,7 +383,7 @@ app.delete("/api/opportunity/:id", async (req, res) => {
   const result = await opportunitiesCollection.deleteOne(filter);
   res.json(result);
 });
-app.post("/api/application", async (req, res) => {
+app.post("/api/application", verifyCollaboretor, async (req, res) => {
   const data = req?.body;
   const application = {
     ...data,
