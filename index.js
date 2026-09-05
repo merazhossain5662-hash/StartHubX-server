@@ -89,7 +89,7 @@ const verifyAdmin = async (req, res, next) => {
       algorithms: ["EdDSA"],
     });
 
-    if (payload?.role !== "admin") {
+    if (payload?.role?.toLowerCase() !== "admin") {
       return res.status(403).json({ message: "Forbidden" });
     }
 
@@ -119,7 +119,7 @@ const verifyCollaboretor = async (req, res, next) => {
       algorithms: ["EdDSA"],
     });
 
-    if (payload?.role !== "collaborator") {
+    if (payload?.role?.toLowerCase() !== "collaborator") {
       return res.status(403).json({ message: "Forbidden" });
     }
     if (req.params.email) {
@@ -153,8 +153,21 @@ const verifyFounder = async (req, res, next) => {
       algorithms: ["EdDSA"],
     });
 
-    if (payload?.role !== "founder") {
+    if (payload?.role?.toLowerCase() !== "founder") {
       return res.status(403).json({ message: "Forbidden" });
+    }
+    if (req.params.email) {
+      const data = await startupsCollection.findOne({
+        FounderEmail: req.params.email,
+      });
+      if (!data) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
+    }
+    if (req.params?.id) {
+      if (payload?.id !== req.params.id) {
+        return res.status(403).json({ message: "Forbidden" });
+      }
     }
 
     console.log("Founder verified:", payload);
