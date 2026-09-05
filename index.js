@@ -122,11 +122,6 @@ const verifyCollaboretor = async (req, res, next) => {
     if (payload?.role?.toLowerCase() !== "collaborator") {
       return res.status(403).json({ message: "Forbidden" });
     }
-    if (req.params.email) {
-      if (payload?.email !== req.params.email) {
-        return res.status(403).json({ message: "Forbidden" });
-      }
-    }
 
     console.log("Collaborator verified:", payload);
     next();
