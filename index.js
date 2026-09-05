@@ -156,19 +156,6 @@ const verifyFounder = async (req, res, next) => {
     if (payload?.role?.toLowerCase() !== "founder") {
       return res.status(403).json({ message: "Forbidden" });
     }
-    if (req.params.email) {
-      const data = await startupsCollection.findOne({
-        FounderEmail: req.params.email,
-      });
-      if (!data) {
-        return res.status(403).json({ message: "Forbidden" });
-      }
-    }
-    if (req.params?.id) {
-      if (payload?.id !== req.params.id) {
-        return res.status(403).json({ message: "Forbidden" });
-      }
-    }
 
     console.log("Founder verified:", payload);
     next();
