@@ -372,7 +372,7 @@ app.get("/api/application/:email", verifyCollaboretor, async (req, res) => {
 
   res.json(result);
 });
-app.get("/api/application/:email/:id", verifyCollaboretor, async (req, res) => {
+app.get("/api/application/:email/:id", async (req, res) => {
   const email = req.params.email;
   const id = req.params?.id;
 
