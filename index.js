@@ -182,7 +182,7 @@ app.patch("/api/user/roler/:email", async (req, res) => {
   res.json(result);
 });
 
-app.post("/api/startups", verifyFounder, async (req, res) => {
+app.post("/api/startups", async (req, res) => {
   const data = req.body;
   const startup = {
     ...data,
@@ -217,21 +217,21 @@ app.get("/api/startups/:id", async (req, res) => {
   res.json(startup);
 });
 
-app.get("/api/startup/:email", verifyFounder, async (req, res) => {
+app.get("/api/startup/:email", async (req, res) => {
   const email = req.params.email;
   const filter = { FounderEmail: email };
   const startup = await startupsCollection.find(filter).toArray();
 
   res.json(startup);
 });
-app.delete("/api/startups/:id", verifyFounder, async (req, res) => {
+app.delete("/api/startups/:id", async (req, res) => {
   const id = req.params.id;
 
   const filter = { _id: new ObjectId(id) };
   const result = await startupsCollection.deleteOne(filter);
   res.json(result);
 });
-app.patch("/api/startups/:id", verifyFounder, async (req, res) => {
+app.patch("/api/startups/:id", async (req, res) => {
   const id = req.params.id;
 
   const data = req.body;
@@ -250,7 +250,7 @@ app.patch("/api/startups/:id", verifyFounder, async (req, res) => {
   res.json(result);
 });
 
-app.post("/api/opportunity", verifyFounder, async (req, res) => {
+app.post("/api/opportunity", async (req, res) => {
   const data = req.body;
   const opportunity = {
     ...data,
@@ -329,7 +329,7 @@ app.get("/api/opportunity/:id", async (req, res) => {
   });
   res.json(opportunity);
 });
-app.patch("/api/opportunity/:id", verifyFounder, async (req, res) => {
+app.patch("/api/opportunity/:id", async (req, res) => {
   const id = req.params.id;
 
   const data = req.body;
@@ -355,7 +355,7 @@ app.get("/api/opportunities/:id", async (req, res) => {
 
   res.json({ opportunities: opportunitise, totalCount: totalOpps });
 });
-app.delete("/api/opportunity/:id", verifyFounder, async (req, res) => {
+app.delete("/api/opportunity/:id", async (req, res) => {
   const id = req.params.id;
   const filter = { _id: new ObjectId(id) };
   const updetor = await applicationCollection.updateOne(
